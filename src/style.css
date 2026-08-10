@@ -328,6 +328,49 @@ body.is-playing .live__dot {
   outline-offset: 4px;
 }
 
+.install {
+  width: min(100%, 18rem);
+  display: grid;
+  gap: 0.55rem;
+  justify-items: center;
+}
+
+.install__btn {
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--lake-deep);
+  background: transparent;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 2px solid var(--lake);
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.install__btn:hover {
+  color: var(--lake);
+  border-color: var(--sun);
+  transform: translateY(-1px);
+}
+
+.install__btn:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 4px;
+}
+
+.install__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: rgb(36 48 51 / 0.7);
+}
+
 @keyframes breathe {
   0%,
   100% {

@@ -1,12 +1,14 @@
 import { defineConfig } from 'vite'
 
 const streamTarget = 'http://eco.onestreaming.com:8107'
+const base = '/webapp/'
 
 export default defineConfig({
+  base,
   server: {
     host: true,
     proxy: {
-      '/stream': {
+      [`${base}stream`]: {
         target: streamTarget,
         changeOrigin: true,
         rewrite: () => '/stream',
@@ -19,7 +21,7 @@ export default defineConfig({
   preview: {
     host: true,
     proxy: {
-      '/stream': {
+      [`${base}stream`]: {
         target: streamTarget,
         changeOrigin: true,
         rewrite: () => '/stream',

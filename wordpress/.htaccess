@@ -1,0 +1,24 @@
+# Serve the Kastoria FM webapp from /webapp without WordPress rewriting it away.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /webapp/
+
+  # Live stream proxy (same-origin HTTPS)
+  RewriteRule ^stream$ stream.php [L]
+
+  # Existing files/directories are served as-is
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # SPA / PWA fallback
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Allow service worker and manifest
+<IfModule mod_headers.c>
+  <FilesMatch "sw\.js$">
+    Header set Cache-Control "no-cache"
+    Header set Service-Worker-Allowed "/webapp/"
+  </FilesMatch>
+</IfModule>

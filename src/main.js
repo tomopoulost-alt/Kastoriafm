@@ -1,6 +1,8 @@
 import './style.css'
 
-const STREAM_URL = '/stream'
+const BASE = import.meta.env.BASE_URL
+const STREAM_URL = `${BASE}stream`
+const asset = (path) => `${BASE}${path.replace(/^\//, '')}`
 
 const app = document.querySelector('#app')
 
@@ -16,7 +18,7 @@ app.innerHTML = `
     <header class="brand">
       <img
         class="brand__mark"
-        src="/logo.png"
+        src="${asset('logo.png')}"
         alt="Kastoria FM 91.5"
         width="220"
         height="235"
@@ -26,8 +28,8 @@ app.innerHTML = `
       <p class="brand__tag">Ο σταθμός που ακούει η πόλη</p>
     </header>
 
-    <section class="player" aria-label="Live radio player">
-      <button class="play" type="button" aria-pressed="false" aria-label="Play live stream">
+    <section class="player" aria-label="Ζωντανή αναπαραγωγή">
+      <button class="play" type="button" aria-pressed="false" aria-label="Αναπαραγωγή">
         <span class="play__icon" data-icon="play" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">
             <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.02-6.86a1 1 0 0 0 0-1.72L9.5 4.28a1 1 0 0 0-1.5.86z"/>
@@ -61,9 +63,16 @@ app.innerHTML = `
           max="1"
           step="0.01"
           value="0.85"
-          aria-label="Volume"
+          aria-label="Ένταση"
         />
       </label>
+    </section>
+
+    <section class="install" hidden>
+      <button class="install__btn" type="button">
+        Εγκατάσταση εφαρμογής
+      </button>
+      <p class="install__hint" hidden></p>
     </section>
   </main>
 
@@ -77,16 +86,20 @@ const volumeInput = document.querySelector('.volume__range')
 const eq = document.querySelector('.eq')
 const playIcon = document.querySelector('[data-icon="play"]')
 const pauseIcon = document.querySelector('[data-icon="pause"]')
+const installSection = document.querySelector('.install')
+const installBtn = document.querySelector('.install__btn')
+const installHint = document.querySelector('.install__hint')
 
 let isPlaying = false
 let isLoading = false
+let deferredPrompt = null
 
 function setPlayingUI(playing) {
   isPlaying = playing
   playBtn.setAttribute('aria-pressed', String(playing))
   playBtn.setAttribute(
     'aria-label',
-    playing ? 'Pause live stream' : 'Play live stream',
+    playing ? 'Παύση' : 'Αναπαραγωγή',
   )
   playIcon.classList.toggle('is-hidden', playing)
   pauseIcon.classList.toggle('is-hidden', !playing)
@@ -105,7 +118,6 @@ async function startStream() {
   playBtn.classList.add('is-loading')
 
   try {
-    // Bust cache so the live edge is fresh after pause/stop.
     audio.src = `${STREAM_URL}?t=${Date.now()}`
     audio.volume = Number(volumeInput.value)
     await audio.play()
@@ -154,7 +166,72 @@ audio.addEventListener('error', () => {
   setStatus('Σφάλμα ροής. Δοκιμάστε ξανά.')
 })
 
-// Reveal stage after first paint for entrance motion.
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+}
+
+function isStandalone() {
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  )
+}
+
+function showInstall() {
+  installSection.hidden = false
+}
+
+function hideInstall() {
+  installSection.hidden = true
+}
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault()
+  deferredPrompt = event
+  if (!isStandalone()) showInstall()
+})
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null
+  hideInstall()
+  setStatus('Η εφαρμογή εγκαταστάθηκε')
+})
+
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt()
+    const result = await deferredPrompt.userChoice
+    deferredPrompt = null
+    if (result.outcome === 'accepted') {
+      hideInstall()
+    }
+    return
+  }
+
+  if (isIos()) {
+    installHint.hidden = false
+    installHint.textContent =
+      'Στο iPhone: πατήστε Κοινή χρήση (□↑) και μετά «Προσθήκη στην οθόνη Αφετηρίας».'
+    return
+  }
+
+  installHint.hidden = false
+  installHint.textContent =
+    'Ανοίξτε το μενού του browser και επιλέξτε «Εγκατάσταση εφαρμογής» ή «Add to Home screen».'
+})
+
+if (!isStandalone() && isIos()) {
+  showInstall()
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${BASE}sw.js`).catch((err) => {
+      console.warn('Service worker registration failed', err)
+    })
+  })
+}
+
 requestAnimationFrame(() => {
   document.body.classList.add('is-ready')
 })

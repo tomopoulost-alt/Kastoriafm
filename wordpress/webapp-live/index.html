@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dce8eb">
+<meta name="description" content="Kastoria FM 91.5 — Ο Σταθμός που ακούει η Πόλη">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kastoria FM">
+<title>Kastoria FM 91.5</title>
+<link rel="manifest" href="/webapp/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/webapp/icon-192.png">
+<link rel="apple-touch-icon" href="/webapp/apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Figtree:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#dce8eb}
+.w{min-height:100dvh;display:grid;place-items:center;padding:1.5rem;background:linear-gradient(180deg,#eaf2f4,#dce8eb 45%,#b9cfd4)}
+.s{width:min(100%,28rem);display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center}
+.logo{width:clamp(8.5rem,32vw,12rem);height:auto;filter:drop-shadow(0 18px 28px rgba(15,63,72,.18))}
+.name{margin:.3rem 0 0;font-family:Syne,sans-serif;font-weight:800;font-size:clamp(2.1rem,7vw,3.2rem);letter-spacing:-.04em;color:#0f3f48}
+.tag{margin:.5rem 0 0;color:rgba(36,48,51,.72)}
+.play{width:5rem;height:5rem;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:#1f6f7c;box-shadow:0 16px 30px rgba(15,63,72,.22)}
+.play .h{display:none}
+.play[data-on="1"] [data-i=play]{display:none}
+.play[data-on="1"] [data-i=pause]{display:block}
+.live{font-family:Syne,sans-serif;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#0f3f48}
+.dot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:#c4493a;margin-right:.4rem;vertical-align:middle}
+.st{color:rgba(36,48,51,.68);margin:.35rem 0 0}
+.vol{width:min(100%,16rem);display:grid;gap:.35rem;justify-items:center}
+.vol label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(36,48,51,.55)}
+.vol input{width:100%}
+.install{width:min(100%,18rem);display:none;gap:.45rem;justify-items:center}
+.install.show{display:grid}
+.install button{width:100%;border:0;background:transparent;border-bottom:2px solid #1f6f7c;color:#0f3f48;font-family:Syne,sans-serif;font-weight:700;font-size:1rem;padding:.85rem 1rem;cursor:pointer}
+.install p{margin:0;font-size:.9rem;line-height:1.4;color:rgba(36,48,51,.7)}
+</style>
+</head>
+<body>
+<div class="w"><div class="s">
+<div>
+<img class="logo" src="https://i0.wp.com/kastoriafm.gr/wp-content/uploads/2023/05/K91.5.png?w=400" alt="Kastoria FM 91.5" width="200" height="214">
+<h1 class="name">Kastoria FM</h1>
+<p class="tag">Ο Σταθμός που ακούει η Πόλη</p>
+</div>
+<button class="play" id="p" type="button" data-on="0" aria-label="Play">
+<svg data-i="play" viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.02-6.86a1 1 0 0 0 0-1.72L9.5 4.28a1 1 0 0 0-1.5.86z"/></svg>
+<svg class="h" data-i="pause" viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M7 5h3.5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9.5 0H20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-3.5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>
+</button>
+<div>
+<div class="live"><span class="dot"></span>Live · 91.5</div>
+<p class="st" id="st">Πατήστε play για να ακούσετε</p>
+</div>
+<div class="vol"><label for="v">Ένταση</label><input id="v" type="range" min="0" max="1" step="0.01" value="0.85"></div>
+<div class="install" id="ins">
+<button type="button" id="insBtn">Εγκατάσταση εφαρμογής</button>
+<p id="insHint" hidden></p>
+</div>
+</div>
+<audio id="a" preload="none" crossorigin="anonymous"></audio>
+</div>
+<script>
+(function(){
+  var S = location.origin + '/webapp/stream.php';
+  var a = document.getElementById('a');
+  var p = document.getElementById('p');
+  var st = document.getElementById('st');
+  var v = document.getElementById('v');
+  var ins = document.getElementById('ins');
+  var insBtn = document.getElementById('insBtn');
+  var insHint = document.getElementById('insHint');
+  var on = false, busy = false, deferred = null;
+
+  function ui(x){ on=x; p.setAttribute('data-on', x?'1':'0'); }
+  function isIos(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  async function start(){
+    if(busy) return; busy=true; st.textContent='Σύνδεση…';
+    try{
+      a.src = S + '?t=' + Date.now();
+      a.volume = +v.value;
+      await a.play();
+      ui(true); st.textContent='Παίζει ζωντανά';
+    }catch(e){
+      ui(false); st.textContent='Αδυναμία αναπαραγωγής. Δοκιμάστε ξανά.';
+      console.error(e);
+    }finally{ busy=false; }
+  }
+  function stop(){ a.pause(); a.removeAttribute('src'); a.load(); ui(false); st.textContent='Σε παύση'; }
+  p.onclick = function(){ on ? stop() : start(); };
+  v.oninput = function(){ a.volume = +v.value; };
+  a.onerror = function(){ ui(false); st.textContent='Σφάλμα ροής. Δοκιμάστε ξανά.'; };
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferred = e;
+    if (!isStandalone()) ins.classList.add('show');
+  });
+  window.addEventListener('appinstalled', function(){
+    deferred = null;
+    ins.classList.remove('show');
+    st.textContent = 'Η εφαρμογή εγκαταστάθηκε';
+  });
+
+  if (!isStandalone() && isIos()) ins.classList.add('show');
+
+  insBtn.addEventListener('click', async function(){
+    if (deferred) {
+      deferred.prompt();
+      await deferred.userChoice;
+      deferred = null;
+      ins.classList.remove('show');
+      return;
+    }
+    insHint.hidden = false;
+    if (isIos()) {
+      insHint.textContent = 'Στο iPhone: πατήστε Κοινή χρήση (□↑) και μετά «Προσθήκη στην οθόνη Αφετηρίας».';
+    } else {
+      insHint.textContent = 'Ανοίξτε το μενού ⋮ του Chrome και επιλέξτε «Εγκατάσταση εφαρμογής» ή «Add to Home screen».';
+    }
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/webapp/sw.js').catch(function(err){
+      console.warn('SW failed', err);
+    });
+  }
+})();
+</script>
+</body>
+</html>

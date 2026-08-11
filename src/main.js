@@ -25,7 +25,7 @@ app.innerHTML = `
         decoding="async"
       />
       <h1 class="brand__name">Kastoria FM</h1>
-      <p class="brand__tag">Ο σταθμός που ακούει η πόλη</p>
+      <p class="brand__tag">Ο Σταθμός που ακούει η Πόλη</p>
     </header>
 
     <section class="player" aria-label="Ζωντανή αναπαραγωγή">

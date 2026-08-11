@@ -107,7 +107,7 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
     st.textContent = 'Η εφαρμογή εγκαταστάθηκε';
   });
 
-  if (!isStandalone() && isIos()) ins.classList.add('show');
+  if (!isStandalone()) ins.classList.add('show');
 
   insBtn.addEventListener('click', async function(){
     if (deferred) {

@@ -2,15 +2,21 @@
 
 Οθόνη παρουσίασης για εργοστάσιο ξύλινων δημιουργιών με **15 άτομα**.
 
+## Δωρεάν δημόσιο domain
+
+Μετά το enable του GitHub Pages:
+
+**https://tomopoulost-alt.github.io/Kastoriafm/**
+
+Ρυθμίσεις: Repo → Settings → Pages → Source: **GitHub Actions**
+
 ## Παρουσίαση σε πελάτη
 
 ```bash
 python3 -m http.server 8080
 ```
 
-Άνοιξε `http://localhost:8080` — ή μοιράσου το link από GitHub Pages / preview του PR.
-
-Η πρώτη οθόνη δείχνει το brand **Kastoria**, το πλάνο της ημέρας και τη ροή σταθμών με demo παραγγελίες.
+Άνοιξε `http://localhost:8080` — ή το δημόσιο github.io link παραπάνω.
 
 ## Καθημερινή ενημέρωση
 

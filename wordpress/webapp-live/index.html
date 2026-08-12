@@ -13,11 +13,29 @@
 <link rel="manifest" href="/webapp/manifest.webmanifest">
 <link rel="icon" type="image/png" href="/webapp/icon-192.png">
 <link rel="apple-touch-icon" href="/webapp/apple-touch-icon.png">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Figtree:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Figtree:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
 body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#dce8eb}
-.w{min-height:100dvh;display:grid;place-items:center;padding:1.5rem;background:linear-gradient(180deg,#eaf2f4,#dce8eb 45%,#b9cfd4)}
+.w{min-height:100dvh;display:grid;place-items:center;padding:1.5rem;background:linear-gradient(180deg,#eaf2f4,#dce8eb 45%,#b9cfd4);position:relative}
+.clock{
+  position:fixed;
+  top:max(1rem, env(safe-area-inset-top));
+  left:max(1rem, env(safe-area-inset-left));
+  z-index:5;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-weight:600;
+  font-size:clamp(1.05rem, 3.2vw, 1.35rem);
+  letter-spacing:.08em;
+  color:#0f3f48;
+  background:rgba(244,248,249,.55);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  padding:.45rem .7rem;
+  border-radius:.4rem;
+  line-height:1;
+  user-select:none;
+}
 .s{width:min(100%,28rem);display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center}
 .logo{width:clamp(8.5rem,32vw,12rem);height:auto;filter:drop-shadow(0 18px 28px rgba(15,63,72,.18))}
 .name{margin:.3rem 0 0;font-family:Syne,sans-serif;font-weight:800;font-size:clamp(2.1rem,7vw,3.2rem);letter-spacing:-.04em;color:#0f3f48}
@@ -30,20 +48,62 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
 .dot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:#c4493a;margin-right:.4rem;vertical-align:middle}
 .st{color:rgba(36,48,51,.68);margin:.35rem 0 0}
 .wave-wrap{
-  width:min(100%,16.5rem);
-  height:3.25rem;
-  opacity:.28;
-  transition:opacity .45s ease;
+  width:min(100%,17rem);
+  height:3.4rem;
+  opacity:.22;
+  transition:opacity .35s ease;
 }
 .wave-wrap.on{opacity:1}
-.wave{
-  display:block;
-  width:100%;
-  height:100%;
+.wave{display:block;width:100%;height:100%}
+.controls{
+  width:min(100%,17rem);
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:.75rem;
 }
-.vol{width:min(100%,16rem);display:grid;gap:.35rem;justify-items:center}
-.vol label{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(36,48,51,.55)}
-.vol input{width:100%}
+.mute{
+  width:2.5rem;
+  height:2.5rem;
+  border:0;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  color:#0f3f48;
+  background:rgba(15,63,72,.08);
+}
+.mute:hover{background:rgba(15,63,72,.14)}
+.mute[aria-pressed="true"]{color:#c4493a}
+.vol{display:grid;gap:.3rem;justify-items:stretch}
+.vol label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(36,48,51,.55);text-align:left}
+.vol input[type=range]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  height:.28rem;
+  border-radius:999px;
+  background:rgba(15,63,72,.18);
+  outline:none;
+}
+.vol input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:1.05rem;
+  height:1.05rem;
+  border-radius:50%;
+  background:#0f3f48;
+  border:2px solid #f4f8f9;
+  cursor:pointer;
+}
+.vol input[type=range]::-moz-range-thumb{
+  width:1.05rem;
+  height:1.05rem;
+  border-radius:50%;
+  background:#0f3f48;
+  border:2px solid #f4f8f9;
+  cursor:pointer;
+}
 .install{width:min(100%,18rem);display:none;gap:.45rem;justify-items:center}
 .install.show{display:grid}
 .install button{width:100%;border:0;background:transparent;border-bottom:2px solid #1f6f7c;color:#0f3f48;font-family:Syne,sans-serif;font-weight:700;font-size:1rem;padding:.85rem 1rem;cursor:pointer}
@@ -54,6 +114,7 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
 </style>
 </head>
 <body>
+<div class="clock" id="clock" aria-live="polite">00:00:00</div>
 <div class="w"><div class="s">
 <div>
 <img class="logo" src="https://i0.wp.com/kastoriafm.gr/wp-content/uploads/2023/05/K91.5.png?w=400" alt="Kastoria FM 91.5" width="200" height="214">
@@ -69,9 +130,18 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
 <p class="st" id="st">Πατήστε play για να ακούσετε</p>
 </div>
 <div class="wave-wrap" id="waveWrap" aria-hidden="true">
-  <canvas class="wave" id="wave" width="330" height="64"></canvas>
+  <canvas class="wave" id="wave" width="340" height="68"></canvas>
 </div>
-<div class="vol"><label for="v">Ένταση</label><input id="v" type="range" min="0" max="1" step="0.01" value="0.85"></div>
+<div class="controls">
+  <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Σίγαση" title="Σίγαση">
+    <svg id="muteIconOn" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M5 10v4h3l4 3V7L8 10H5zm11.5 2a3.5 3.5 0 0 0-1.8-3.05v6.1A3.49 3.49 0 0 0 16.5 12zM14 4.23v2.06a5.5 5.5 0 0 1 0 11.42v2.06a7.5 7.5 0 0 0 0-15.54z"/></svg>
+    <svg id="muteIconOff" class="h" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="display:none"><path d="M16.5 12a3.5 3.5 0 0 0-1.8-3.05v2.24l1.75 1.75c.03-.3.05-.62.05-.94zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-3.53-2.05-6.56-5-7.97v2.06A5.5 5.5 0 0 1 19 12zM4.27 3 3 4.27 7.73 9H5v4h3l4 3v-4.27l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/></svg>
+  </button>
+  <div class="vol">
+    <label for="v">Ένταση</label>
+    <input id="v" type="range" min="0" max="1" step="0.01" value="0.85">
+  </div>
+</div>
 <div class="install" id="ins">
 <button type="button" id="insBtn">Εγκατάσταση εφαρμογής</button>
 <p id="insHint" hidden></p>
@@ -86,24 +156,54 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   var p = document.getElementById('p');
   var st = document.getElementById('st');
   var v = document.getElementById('v');
+  var muteBtn = document.getElementById('mute');
+  var muteOn = document.getElementById('muteIconOn');
+  var muteOff = document.getElementById('muteIconOff');
+  var clockEl = document.getElementById('clock');
   var ins = document.getElementById('ins');
   var insBtn = document.getElementById('insBtn');
   var insHint = document.getElementById('insHint');
   var waveWrap = document.getElementById('waveWrap');
   var canvas = document.getElementById('wave');
   var ctx = canvas.getContext('2d');
-  var on = false, busy = false, deferred = null;
-  var audioCtx = null, analyser = null, source = null, raf = 0;
-  var bars = 36;
+  var on = false, busy = false, deferred = null, muted = false;
+  var vol = 0.85;
+  var audioCtx = null, analyser = null, source = null, gainNode = null, raf = 0;
+  var bars = 40;
   var levels = new Float32Array(bars);
+  var phase = 0;
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function pad(n){ return String(n).padStart(2, '0'); }
+  function tickClock(){
+    var d = new Date();
+    clockEl.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  function applyVolume(){
+    var value = muted ? 0 : vol;
+    a.volume = value;
+    if (gainNode) {
+      gainNode.gain.value = value;
+    }
+  }
+
+  function setMuted(next){
+    muted = next;
+    muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    muteBtn.setAttribute('aria-label', muted ? 'Κατάργηση σίγασης' : 'Σίγαση');
+    muteOn.style.display = muted ? 'none' : 'block';
+    muteOff.style.display = muted ? 'block' : 'none';
+    a.muted = muted;
+    applyVolume();
+  }
 
   function ui(x){
     on = x;
     p.setAttribute('data-on', x ? '1' : '0');
     waveWrap.classList.toggle('on', x);
-    if (x) startWave();
-    else stopWave();
   }
 
   function isIos(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
@@ -112,106 +212,106 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   }
 
   function setupAudioGraph(){
-    if (analyser || !window.AudioContext && !window.webkitAudioContext) return;
+    if (!window.AudioContext && !window.webkitAudioContext) return;
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       audioCtx = audioCtx || new AC();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
       if (!source) {
         source = audioCtx.createMediaElementSource(a);
         analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 128;
-        analyser.smoothingTimeConstant = 0.82;
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.7;
+        gainNode = audioCtx.createGain();
         source.connect(analyser);
-        analyser.connect(audioCtx.destination);
+        analyser.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        applyVolume();
       }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     } catch (e) {
-      analyser = null;
-      console.warn('Wave analyser unavailable', e);
+      console.warn('Audio graph unavailable', e);
     }
-  }
-
-  function drawIdleWave(t){
-    var w = canvas.width, h = canvas.height, mid = h / 2;
-    ctx.clearRect(0, 0, w, h);
-    for (var i = 0; i < bars; i++) {
-      var n = i / (bars - 1);
-      var envelope = Math.sin(Math.PI * n);
-      var bob = 0.22 + 0.12 * Math.sin(t / 700 + i * 0.35);
-      levels[i] += ((bob * envelope) - levels[i]) * 0.08;
-    }
-    paintBars();
-  }
-
-  function drawLiveWave(){
-    var data;
-    if (analyser) {
-      data = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(data);
-    }
-    for (var i = 0; i < bars; i++) {
-      var target;
-      if (data) {
-        var idx = Math.floor(i * data.length / bars * 0.55) + 2;
-        target = Math.pow(data[idx] / 255, 1.15);
-      } else {
-        var t = performance.now();
-        target = 0.25 + 0.55 * Math.abs(Math.sin(t / 180 + i * 0.42)) * (0.55 + 0.45 * Math.sin(t / 520 + i));
-      }
-      var n = i / (bars - 1);
-      target *= 0.35 + 0.65 * Math.sin(Math.PI * n);
-      levels[i] += (target - levels[i]) * 0.22;
-    }
-    paintBars();
   }
 
   function paintBars(){
     var w = canvas.width, h = canvas.height, mid = h / 2;
-    var gap = 3;
+    var gap = 2.5;
     var barW = (w - gap * (bars - 1)) / bars;
     ctx.clearRect(0, 0, w, h);
     for (var i = 0; i < bars; i++) {
-      var amp = Math.max(0.06, levels[i]);
-      var barH = Math.max(3, amp * (h * 0.86));
+      var amp = Math.max(0.05, levels[i]);
+      var barH = Math.max(3, amp * (h * 0.9));
       var x = i * (barW + gap);
       var y = mid - barH / 2;
       var grad = ctx.createLinearGradient(0, y, 0, y + barH);
-      grad.addColorStop(0, 'rgba(31,111,124,0.35)');
-      grad.addColorStop(0.5, 'rgba(15,63,72,0.9)');
-      grad.addColorStop(1, 'rgba(31,111,124,0.35)');
+      grad.addColorStop(0, 'rgba(31,111,124,0.28)');
+      grad.addColorStop(0.5, 'rgba(15,63,72,0.95)');
+      grad.addColorStop(1, 'rgba(31,111,124,0.28)');
       ctx.fillStyle = grad;
-      roundRect(ctx, x, y, barW, barH, Math.min(4, barW / 2));
+      var r = Math.min(3.5, barW / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + barW, y + barH, x, y + barH, r);
+      ctx.arcTo(x, y + barH, x, y, r);
+      ctx.arcTo(x, y, x + barW, y, r);
+      ctx.closePath();
       ctx.fill();
     }
   }
 
-  function roundRect(c, x, y, w, h, r){
-    c.beginPath();
-    c.moveTo(x + r, y);
-    c.arcTo(x + w, y, x + w, y + h, r);
-    c.arcTo(x + w, y + h, x, y + h, r);
-    c.arcTo(x, y + h, x, y, r);
-    c.arcTo(x, y, x + w, y, r);
-    c.closePath();
+  function musicMotion(t){
+    phase += 0.045;
+    for (var i = 0; i < bars; i++) {
+      var n = i / (bars - 1);
+      var envelope = Math.sin(Math.PI * n);
+      // layered freqs look like a beat-driven equalizer
+      var beat = 0.55 + 0.45 * Math.sin(phase * 1.7 + i * 0.33);
+      var shimmer = 0.5 + 0.5 * Math.sin(phase * 3.1 - i * 0.55);
+      var bass = 0.5 + 0.5 * Math.sin(phase * 0.9 + i * 0.12);
+      var target = (0.22 * bass + 0.45 * beat + 0.33 * shimmer) * (0.25 + 0.75 * envelope);
+      // occasional stronger peaks
+      if ((Math.floor(phase * 8 + i) % 17) === 0) target = Math.min(1, target + 0.35);
+      levels[i] += (target - levels[i]) * 0.28;
+    }
+  }
+
+  function analyseMotion(){
+    if (!analyser) return false;
+    var data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+    var sum = 0;
+    for (var s = 0; s < data.length; s++) sum += data[s];
+    var avg = sum / (data.length * 255);
+    // If stream analysis is flat, fall back to animated motion
+    if (avg < 0.02) return false;
+    for (var i = 0; i < bars; i++) {
+      var idx = Math.floor(2 + i * (data.length * 0.5) / bars);
+      var target = Math.pow(data[idx] / 255, 1.05);
+      var n = i / (bars - 1);
+      target *= 0.3 + 0.7 * Math.sin(Math.PI * n);
+      levels[i] += (target - levels[i]) * 0.32;
+    }
+    return true;
+  }
+
+  function idleMotion(t){
+    for (var i = 0; i < bars; i++) {
+      var n = i / (bars - 1);
+      var envelope = Math.sin(Math.PI * n);
+      var bob = 0.14 + 0.08 * Math.sin(t / 850 + i * 0.3);
+      levels[i] += ((bob * envelope) - levels[i]) * 0.06;
+    }
   }
 
   function loop(t){
-    if (on && !reduceMotion) drawLiveWave();
-    else drawIdleWave(t || performance.now());
-    raf = requestAnimationFrame(loop);
-  }
-
-  function startWave(){
-    if (reduceMotion) {
-      drawIdleWave(0);
-      return;
+    if (on && !reduceMotion) {
+      if (!analyseMotion()) musicMotion(t);
+    } else {
+      idleMotion(t || performance.now());
     }
-    if (!raf) raf = requestAnimationFrame(loop);
-  }
-
-  function stopWave(){
-    // keep gentle idle motion
-    if (!raf && !reduceMotion) raf = requestAnimationFrame(loop);
+    paintBars();
+    raf = requestAnimationFrame(loop);
   }
 
   async function start(){
@@ -219,9 +319,10 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
     busy = true;
     st.textContent = 'Σύνδεση…';
     try {
+      a.crossOrigin = 'anonymous';
       a.src = S + '?t=' + Date.now();
-      a.volume = +v.value;
       setupAudioGraph();
+      applyVolume();
       await a.play();
       if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
       ui(true);
@@ -244,7 +345,21 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   }
 
   p.onclick = function(){ on ? stop() : start(); };
-  v.oninput = function(){ a.volume = +v.value; };
+
+  function onVolInput(){
+    vol = Number(v.value);
+    if (muted && vol > 0) setMuted(false);
+    applyVolume();
+  }
+  v.addEventListener('input', onVolInput);
+  v.addEventListener('change', onVolInput);
+
+  muteBtn.addEventListener('click', function(){
+    if (!muted && vol === 0) vol = 0.85;
+    setMuted(!muted);
+    if (!muted) v.value = String(vol);
+  });
+
   a.onerror = function(){ ui(false); st.textContent = 'Σφάλμα ροής. Δοκιμάστε ξανά.'; };
 
   window.addEventListener('beforeinstallprompt', function(e){
@@ -282,8 +397,8 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
     });
   }
 
-  // soft resting waveform
-  startWave();
+  applyVolume();
+  raf = requestAnimationFrame(loop);
 })();
 </script>
 </body>

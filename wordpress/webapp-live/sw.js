@@ -1,4 +1,4 @@
-const CACHE = 'kastoriafm-webapp-v4';
+const CACHE = 'kastoriafm-webapp-v5';
 const SHELL = [
   '/webapp/',
   '/webapp/index.html',

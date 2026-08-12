@@ -147,11 +147,15 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
 <p id="insHint" hidden></p>
 </div>
 </div>
-<audio id="a" preload="none" crossorigin="anonymous"></audio>
+<audio id="a" preload="none"></audio>
 </div>
 <script>
 (function(){
-  var S = location.origin + '/webapp/stream.php';
+  var STREAMS = [
+    location.origin + '/webapp/stream.php',
+    location.origin + '/?kastoria_stream=1'
+  ];
+  var streamIndex = 0;
   var a = document.getElementById('a');
   var p = document.getElementById('p');
   var st = document.getElementById('st');
@@ -168,7 +172,8 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   var ctx = canvas.getContext('2d');
   var on = false, busy = false, deferred = null, muted = false;
   var vol = 0.85;
-  var audioCtx = null, analyser = null, source = null, gainNode = null, raf = 0;
+  var raf = 0;
+  var connectTimer = 0;
   var bars = 40;
   var levels = new Float32Array(bars);
   var phase = 0;
@@ -183,11 +188,8 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   setInterval(tickClock, 1000);
 
   function applyVolume(){
-    var value = muted ? 0 : vol;
-    a.volume = value;
-    if (gainNode) {
-      gainNode.gain.value = value;
-    }
+    a.muted = muted;
+    a.volume = muted ? 0 : vol;
   }
 
   function setMuted(next){
@@ -196,7 +198,6 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
     muteBtn.setAttribute('aria-label', muted ? 'Κατάργηση σίγασης' : 'Σίγαση');
     muteOn.style.display = muted ? 'none' : 'block';
     muteOff.style.display = muted ? 'block' : 'none';
-    a.muted = muted;
     applyVolume();
   }
 
@@ -209,28 +210,6 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   function isIos(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
   function isStandalone(){
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  }
-
-  function setupAudioGraph(){
-    if (!window.AudioContext && !window.webkitAudioContext) return;
-    try {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      audioCtx = audioCtx || new AC();
-      if (!source) {
-        source = audioCtx.createMediaElementSource(a);
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.7;
-        gainNode = audioCtx.createGain();
-        source.connect(analyser);
-        analyser.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        applyVolume();
-      }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    } catch (e) {
-      console.warn('Audio graph unavailable', e);
-    }
   }
 
   function paintBars(){
@@ -276,25 +255,6 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
     }
   }
 
-  function analyseMotion(){
-    if (!analyser) return false;
-    var data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
-    var sum = 0;
-    for (var s = 0; s < data.length; s++) sum += data[s];
-    var avg = sum / (data.length * 255);
-    // If stream analysis is flat, fall back to animated motion
-    if (avg < 0.02) return false;
-    for (var i = 0; i < bars; i++) {
-      var idx = Math.floor(2 + i * (data.length * 0.5) / bars);
-      var target = Math.pow(data[idx] / 255, 1.05);
-      var n = i / (bars - 1);
-      target *= 0.3 + 0.7 * Math.sin(Math.PI * n);
-      levels[i] += (target - levels[i]) * 0.32;
-    }
-    return true;
-  }
-
   function idleMotion(t){
     for (var i = 0; i < bars; i++) {
       var n = i / (bars - 1);
@@ -305,41 +265,104 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   }
 
   function loop(t){
-    if (on && !reduceMotion) {
-      if (!analyseMotion()) musicMotion(t);
-    } else {
-      idleMotion(t || performance.now());
-    }
+    if (on && !reduceMotion) musicMotion(t);
+    else idleMotion(t || performance.now());
     paintBars();
     raf = requestAnimationFrame(loop);
   }
 
-  async function start(){
-    if (busy) return;
-    busy = true;
-    st.textContent = 'Σύνδεση…';
-    try {
-      a.crossOrigin = 'anonymous';
-      a.src = S + '?t=' + Date.now();
-      setupAudioGraph();
-      applyVolume();
-      await a.play();
-      if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
-      ui(true);
-      st.textContent = 'Παίζει ζωντανά';
-    } catch (e) {
-      ui(false);
-      st.textContent = 'Αδυναμία αναπαραγωγής. Δοκιμάστε ξανά.';
-      console.error(e);
-    } finally {
-      busy = false;
+  function clearConnectTimer(){
+    if (connectTimer) {
+      clearTimeout(connectTimer);
+      connectTimer = 0;
     }
   }
 
+  function markPlaying(){
+    clearConnectTimer();
+    busy = false;
+    ui(true);
+    st.textContent = 'Παίζει ζωντανά';
+  }
+
+  function fail(msg){
+    clearConnectTimer();
+    busy = false;
+    try { a.pause(); } catch (e) {}
+    ui(false);
+    st.textContent = msg || 'Αδυναμία αναπαραγωγής. Δοκιμάστε ξανά.';
+  }
+
+  async function tryPlay(url){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      function cleanup(){
+        a.removeEventListener('playing', onPlaying);
+        a.removeEventListener('error', onError);
+      }
+      function onPlaying(){
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(true);
+      }
+      function onError(){
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('media error'));
+      }
+      a.addEventListener('playing', onPlaying);
+      a.addEventListener('error', onError);
+      a.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+      applyVolume();
+      var playPromise = a.play();
+      if (playPromise && playPromise.then) {
+        playPromise.catch(function(err){
+          if (settled) return;
+          settled = true;
+          cleanup();
+          reject(err);
+        });
+      }
+    });
+  }
+
+  async function start(){
+    if (busy) return;
+    if (on) return;
+    busy = true;
+    st.textContent = 'Σύνδεση…';
+    clearConnectTimer();
+    connectTimer = setTimeout(function(){
+      // Keep trying next source on timeout
+      a.pause();
+    }, 10000);
+
+    var lastError = null;
+    for (var i = 0; i < STREAMS.length; i++) {
+      var idx = (streamIndex + i) % STREAMS.length;
+      try {
+        st.textContent = 'Σύνδεση…';
+        await tryPlay(STREAMS[idx]);
+        streamIndex = idx;
+        markPlaying();
+        return;
+      } catch (err) {
+        lastError = err;
+        console.warn('Stream failed', STREAMS[idx], err);
+      }
+    }
+    console.error(lastError);
+    fail('Αδυναμία σύνδεσης στη ροή. Δοκιμάστε ξανά.');
+  }
+
   function stop(){
+    clearConnectTimer();
+    busy = false;
     a.pause();
     a.removeAttribute('src');
-    a.load();
+    try { a.load(); } catch (e) {}
     ui(false);
     st.textContent = 'Σε παύση';
   }

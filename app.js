@@ -11,8 +11,8 @@ const els = {
   assignments: document.getElementById("assignments"),
   absences: document.getElementById("absences"),
   checklist: document.getElementById("checklist"),
-  roster: document.getElementById("roster"),
   presenceSummary: document.getElementById("presenceSummary"),
+  stationFlow: document.getElementById("stationFlow"),
   printBtn: document.getElementById("printBtn"),
 };
 
@@ -20,8 +20,24 @@ let staffData = null;
 
 async function loadJSON(path) {
   const res = await fetch(path);
-  if (!res.ok) throw new Error(`Δεν βρέθηκε: ${path}`);
+  if (!res.ok) throw new Error(`Missing ${path}`);
   return res.json();
+}
+
+async function getStaff() {
+  try {
+    return await loadJSON("data/staff.json");
+  } catch {
+    return window.KASTORIA_EMBED?.staff;
+  }
+}
+
+async function getPlan(dateStr) {
+  try {
+    return await loadJSON(`data/plans/${dateStr}.json`);
+  } catch {
+    return window.KASTORIA_EMBED?.plans?.[dateStr];
+  }
 }
 
 function priorityClass(priority) {
@@ -37,7 +53,7 @@ function staffById(id) {
 
 function renderList(el, items, emptyText) {
   el.innerHTML = "";
-  if (!items || !items.length) {
+  if (!items?.length) {
     const li = document.createElement("li");
     li.textContent = emptyText;
     el.appendChild(li);
@@ -50,6 +66,38 @@ function renderList(el, items, emptyText) {
   });
 }
 
+function renderStationFlow(plan) {
+  const counts = {};
+  plan.assignments.forEach((a) => {
+    const key = a.station || "Άλλο";
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  const order = [
+    "Κοπή",
+    "Συναρμολόγηση",
+    "Τριβείο",
+    "Βαφείο",
+    "Σχεδιαστήριο",
+    "QC / Παράδοση",
+    "Αποθήκη",
+    "Γραφείο / Επόπτευση",
+  ];
+
+  const entries = order
+    .filter((name) => counts[name])
+    .map((name) => [name, counts[name]]);
+
+  els.stationFlow.innerHTML = "";
+  entries.forEach(([name, count], i) => {
+    const div = document.createElement("div");
+    div.className = "station-chip";
+    div.style.animationDelay = `${0.05 * i}s`;
+    div.innerHTML = `<strong>${count}</strong><span>${name}</span>`;
+    els.stationFlow.appendChild(div);
+  });
+}
+
 function renderOrders(orders) {
   els.orders.innerHTML = "";
   if (!orders?.length) {
@@ -57,19 +105,26 @@ function renderOrders(orders) {
     return;
   }
 
-  orders.forEach((order) => {
+  orders.forEach((order, i) => {
     const names = (order.assigned || [])
       .map((id) => staffById(id)?.name || id)
-      .join(", ");
-    const div = document.createElement("div");
-    div.className = `order ${priorityClass(order.priority)}`;
+      .join(" · ");
+    const div = document.createElement("article");
+    div.className = "order";
+    div.style.animationDelay = `${0.04 * i}s`;
     div.innerHTML = `
-      <div class="order-top">
-        <span class="order-id">${order.id} · ${order.client}</span>
-        <span class="badge">${order.priority} · ${order.stage} · έως ${order.deadline}</span>
+      <div>
+        <div class="order-id">${order.id}</div>
+        <div class="order-meta">${order.client}</div>
       </div>
-      <strong>${order.product}</strong>
-      <span class="hint">Ομάδα: ${names || "—"}</span>
+      <div>
+        <strong>${order.product}</strong>
+        <div class="order-meta">Ομάδα: ${names || "—"}</div>
+      </div>
+      <div class="priority ${priorityClass(order.priority)}">
+        <b>${order.priority}</b>
+        ${order.stage} · έως ${order.deadline}
+      </div>
     `;
     els.orders.appendChild(div);
   });
@@ -87,14 +142,14 @@ function renderAssignments(plan) {
 
   plan.assignments.forEach((a) => {
     const person = staffById(a.staffId);
-    const isAbsent = (a.status || "").toLowerCase().includes("απών") ||
+    const isAbsent =
+      (a.status || "").toLowerCase().includes("απών") ||
       (a.status || "").toLowerCase().includes("απουσ");
     if (isAbsent) absent += 1;
     else present += 1;
 
     const row = document.createElement("div");
     row.className = "assign-row";
-    row.setAttribute("role", "row");
     row.innerHTML = `
       <span class="pid">${a.staffId}</span>
       <span class="name"><strong>${person?.name || a.staffId}</strong></span>
@@ -125,58 +180,48 @@ function renderAbsences(plan) {
   });
 }
 
-function renderRoster() {
-  els.roster.innerHTML = "";
-  staffData.staff.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "person";
-    card.innerHTML = `
-      <strong>${p.id} · ${p.name}</strong>
-      <span>${p.role}</span>
-      <span>${p.station}</span>
-    `;
-    els.roster.appendChild(card);
-  });
-}
-
 async function loadPlan(dateStr) {
-  try {
-    const plan = await loadJSON(`data/plans/${dateStr}.json`);
-    els.planTitle.textContent = plan.title;
-    els.planNotes.textContent = plan.notes || "";
+  const plan = await getPlan(dateStr);
+  if (!plan) {
+    els.planTitle.textContent = "Δεν υπάρχει πλάνο για αυτή την ημέρα";
+    els.planNotes.textContent = "Ετοιμάζουμε νέο πλάνο μόλις δοθούν παραγγελίες και απουσίες.";
     els.shiftInfo.textContent = `Βάρδια ${staffData.shift}`;
-    renderList(els.priorities, plan.priorities, "Χωρίς προτεραιότητες.");
-    renderList(els.materials, plan.materialsNeeded, "Χωρίς λίστα υλικών.");
-    renderList(els.checklist, plan.endOfDayChecklist, "Χωρίς checklist.");
-    renderOrders(plan.orders);
-    renderAssignments(plan);
-    renderAbsences(plan);
-    document.title = `Kastoria — ${plan.title}`;
-  } catch (err) {
-    els.planTitle.textContent = "Δεν υπάρχει πλάνο για αυτή την ημερομηνία";
-    els.planNotes.textContent = "Στείλε παραγγελίες, απουσίες και προτεραιότητες για να ετοιμαστεί.";
-    els.shiftInfo.textContent = "";
+    els.presenceSummary.textContent = "—";
+    els.stationFlow.innerHTML = "";
     els.priorities.innerHTML = "";
     els.materials.innerHTML = "";
     els.orders.innerHTML = "";
     els.assignments.innerHTML = "";
     els.absences.innerHTML = "";
     els.checklist.innerHTML = "";
-    els.presenceSummary.textContent = "";
-    console.warn(err);
+    return;
   }
+
+  els.planTitle.textContent = plan.title;
+  els.planNotes.textContent = plan.notes || "";
+  els.shiftInfo.textContent = `Βάρδια ${staffData.shift}`;
+  renderList(els.priorities, plan.priorities, "Χωρίς προτεραιότητες.");
+  renderList(els.materials, plan.materialsNeeded, "Χωρίς λίστα υλικών.");
+  renderList(els.checklist, plan.endOfDayChecklist, "Χωρίς checklist.");
+  renderOrders(plan.orders);
+  renderAssignments(plan);
+  renderAbsences(plan);
+  renderStationFlow(plan);
+  document.title = `Kastoria — ${plan.title}`;
 }
 
 async function init() {
-  staffData = await loadJSON("data/staff.json");
-  renderRoster();
+  staffData = await getStaff();
+  if (!staffData) {
+    els.planTitle.textContent = "Σφάλμα φόρτωσης";
+    els.planNotes.textContent = "Δεν βρέθηκαν δεδομένα προσωπικού.";
+    return;
+  }
+
   els.planDate.value = DEFAULT_PLAN;
   await loadPlan(DEFAULT_PLAN);
 
-  els.planDate.addEventListener("change", (e) => {
-    loadPlan(e.target.value);
-  });
-
+  els.planDate.addEventListener("change", (e) => loadPlan(e.target.value));
   els.printBtn.addEventListener("click", () => window.print());
 }
 

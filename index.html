@@ -3,86 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kastoria — Πλάνο Ημέρας</title>
+  <meta name="description" content="Kastoria Ξύλο Δημιουργίες — καθημερινό πλάνο παραγωγής" />
+  <title>Kastoria — Πλάνο Παραγωγής</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="grain" aria-hidden="true"></div>
-  <header class="top">
-    <div class="brand-block">
-      <p class="brand">Kastoria</p>
-      <p class="brand-sub">Ξύλο Δημιουργίες · Πλάνο ημέρας</p>
-    </div>
-    <div class="meta">
+  <div class="atmosphere" aria-hidden="true">
+    <div class="wood-plane"></div>
+    <div class="grain"></div>
+  </div>
+
+  <header class="site-top">
+    <p class="demo-tag">Παρουσίαση παραγωγής</p>
+    <div class="top-actions">
       <label class="date-pick">
-        <span>Ημερομηνία</span>
+        <span>Ημέρα</span>
         <input type="date" id="planDate" />
       </label>
-      <button type="button" class="btn" id="printBtn">Εκτύπωση</button>
+      <button type="button" class="btn ghost" id="printBtn">Εκτύπωση</button>
     </div>
   </header>
 
+  <section class="hero">
+    <p class="brand">Kastoria</p>
+    <h1 id="planTitle">Πλάνο παραγωγής</h1>
+    <p id="planNotes" class="lede">Φόρτωση…</p>
+    <div class="hero-cta">
+      <span class="shift-pill" id="shiftInfo">Βάρδια 08:00 – 16:00</span>
+      <span class="shift-pill soft" id="presenceSummary">15 παρόντες</span>
+    </div>
+  </section>
+
   <main>
-    <section class="hero-strip" id="planHero">
-      <h1 id="planTitle">Φόρτωση πλάνου…</h1>
-      <p id="planNotes" class="lede"></p>
-      <p class="shift" id="shiftInfo"></p>
+    <section class="flow-section" aria-label="Ροή παραγωγής">
+      <h2>Ροή σήμερα</h2>
+      <div id="stationFlow" class="station-flow"></div>
     </section>
 
-    <section class="grid-two">
-      <article class="panel">
-        <h2>Προτεραιότητες</h2>
-        <ol id="priorities" class="clean-list"></ol>
-      </article>
-      <article class="panel">
-        <h2>Υλικά που χρειάζονται</h2>
-        <ul id="materials" class="clean-list"></ul>
-      </article>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Παραγγελίες</h2>
-        <p class="hint">Στάδιο · προθεσμία · ομάδα</p>
+    <section class="orders-section">
+      <div class="section-head">
+        <h2>Ενεργές παραγγελίες</h2>
+        <p class="hint">Από κοπή έως παράδοση</p>
       </div>
       <div id="orders" class="orders"></div>
     </section>
 
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Ανάθεση 15 ατόμων</h2>
-        <p class="hint" id="presenceSummary"></p>
+    <section class="grid-two">
+      <article>
+        <h2>Προτεραιότητες ημέρας</h2>
+        <ol id="priorities" class="clean-list"></ol>
+      </article>
+      <article>
+        <h2>Υλικά</h2>
+        <ul id="materials" class="clean-list"></ul>
+      </article>
+    </section>
+
+    <section class="assign-section">
+      <div class="section-head">
+        <h2>Ομάδα · 15 άτομα</h2>
+        <p class="hint">Ανάθεση ανά σταθμό</p>
       </div>
       <div id="assignments" class="assign-table" role="table"></div>
     </section>
 
-    <section class="grid-two">
-      <article class="panel">
+    <section class="grid-two bottom-grid">
+      <article>
         <h2>Απουσίες</h2>
         <ul id="absences" class="clean-list"></ul>
       </article>
-      <article class="panel">
-        <h2>Τέλος βάρδιας</h2>
+      <article>
+        <h2>Κλείσιμο βάρδιας</h2>
         <ul id="checklist" class="clean-list checks"></ul>
       </article>
-    </section>
-
-    <section class="panel roster-panel">
-      <div class="panel-head">
-        <h2>Μόνιμο οργανόγραμμα</h2>
-        <p class="hint">15 θέσεις · σταθμοί παραγωγής</p>
-      </div>
-      <div id="roster" class="roster"></div>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Στείλε κάθε μέρα: παραγγελίες, στάδια, απουσίες, επείγοντα — και ετοιμάζεται νέο πλάνο.</p>
+    <p class="foot-brand">Kastoria Ξύλο Δημιουργίες</p>
+    <p>Καθημερινός συντονισμός παραγωγής · 15 άτομα · 8 σταθμοί</p>
   </footer>
 
+  <script src="data/embed.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -10,9 +10,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kastoria FM">
 <title>Kastoria FM 91.5</title>
-<link rel="manifest" href="/webapp/manifest.webmanifest">
-<link rel="icon" type="image/png" href="/webapp/icon-192.png">
-<link rel="apple-touch-icon" href="/webapp/apple-touch-icon.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Figtree:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%}
@@ -152,6 +152,7 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
 <script>
 (function(){
   var STREAMS = [
+    location.origin + '/stream',
     location.origin + '/webapp/stream.php',
     location.origin + '/?kastoria_stream=1'
   ];
@@ -415,7 +416,7 @@ body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#
   });
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/webapp/sw.js').catch(function(err){
+    navigator.serviceWorker.register('./sw.js').catch(function(err){
       console.warn('SW failed', err);
     });
   }

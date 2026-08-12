@@ -8,7 +8,8 @@
     "build": "vite build",
     "build:wordpress": "bash scripts/build-wordpress.sh",
     "preview": "vite preview",
-    "start": "node server.js"
+    "start": "node standalone-server.js",
+    "start:vite": "node server.js"
   },
   "engines": {
     "node": ">=18"

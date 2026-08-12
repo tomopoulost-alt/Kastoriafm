@@ -1,11 +1,11 @@
-const CACHE = 'kastoriafm-webapp-v5';
+const CACHE = 'kastoriafm-webapp-v6';
 const SHELL = [
-  '/webapp/',
-  '/webapp/index.html',
-  '/webapp/manifest.webmanifest',
-  '/webapp/icon-192.png',
-  '/webapp/icon-512.png',
-  '/webapp/apple-touch-icon.png'
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -24,7 +24,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  if (url.pathname.includes('stream.php') || url.pathname.endsWith('/stream')) {
+  if (url.pathname.includes('stream')) {
     return;
   }
   if (event.request.method !== 'GET') return;

@@ -2,8 +2,8 @@
   "name": "Kastoria FM 91.5",
   "short_name": "Kastoria FM",
   "description": "Ο Σταθμός που ακούει η Πόλη",
-  "start_url": "/webapp/",
-  "scope": "/webapp/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#dce8eb",
@@ -11,25 +11,25 @@
   "lang": "el",
   "icons": [
     {
-      "src": "/webapp/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/webapp/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/webapp/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/webapp/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

@@ -4,12 +4,11 @@ import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
-const DIST = join(__dirname, 'dist')
+const ROOT = join(__dirname, 'wordpress', 'webapp-live')
 const PORT = Number(process.env.PORT) || 4173
-const BASE_PATH = '/webapp'
 const STREAM_HOST = 'eco.onestreaming.com'
 const STREAM_PORT = 8107
-const STREAM_PATH = '/stream'
+const STREAM_PATHS = ['/stream', '/;', '/stream/1/']
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -20,8 +19,6 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.json': 'application/json',
   '.webmanifest': 'application/manifest+json',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
 }
 
 function sendFile(res, filePath) {
@@ -30,49 +27,55 @@ function sendFile(res, filePath) {
     res.end('Not found')
     return
   }
-
   const type = MIME[extname(filePath)] || 'application/octet-stream'
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'public, max-age=3600' })
+  const noCache = filePath.endsWith('sw.js') || filePath.endsWith('index.html')
+  res.writeHead(200, {
+    'Content-Type': type,
+    'Cache-Control': noCache ? 'no-cache' : 'public, max-age=3600',
+  })
   createReadStream(filePath).pipe(res)
 }
 
-function proxyStream(clientReq, clientRes) {
+function proxyStream(clientReq, clientRes, pathIndex = 0) {
+  if (pathIndex >= STREAM_PATHS.length) {
+    if (!clientRes.headersSent) {
+      clientRes.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' })
+    }
+    clientRes.end('Stream unavailable')
+    return
+  }
+
   const upstream = http.request(
     {
       hostname: STREAM_HOST,
       port: STREAM_PORT,
-      path: STREAM_PATH,
+      path: STREAM_PATHS[pathIndex],
       method: 'GET',
       headers: {
         'User-Agent': clientReq.headers['user-agent'] || 'KastoriaFM-Player',
-        'Icy-MetaData': '1',
+        'Icy-MetaData': '0',
         Connection: 'keep-alive',
       },
     },
     (upstreamRes) => {
+      if ((upstreamRes.statusCode || 500) >= 400) {
+        upstreamRes.resume()
+        proxyStream(clientReq, clientRes, pathIndex + 1)
+        return
+      }
       const headers = {
         'Content-Type': upstreamRes.headers['content-type'] || 'audio/mpeg',
         'Cache-Control': 'no-cache, no-store',
         'Access-Control-Allow-Origin': '*',
+        'Connection': 'keep-alive',
       }
-
-      if (upstreamRes.headers['icy-name']) headers['icy-name'] = upstreamRes.headers['icy-name']
-      if (upstreamRes.headers['icy-br']) headers['icy-br'] = upstreamRes.headers['icy-br']
-      if (upstreamRes.headers['icy-metaint']) {
-        headers['icy-metaint'] = upstreamRes.headers['icy-metaint']
-      }
-
       clientRes.writeHead(upstreamRes.statusCode || 200, headers)
       upstreamRes.pipe(clientRes)
     },
   )
 
-  upstream.on('error', (err) => {
-    console.error('Stream proxy error:', err.message)
-    if (!clientRes.headersSent) {
-      clientRes.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' })
-    }
-    clientRes.end('Stream unavailable')
+  upstream.on('error', () => {
+    proxyStream(clientReq, clientRes, pathIndex + 1)
   })
 
   clientReq.on('close', () => upstream.destroy())
@@ -81,29 +84,25 @@ function proxyStream(clientReq, clientRes) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`)
-  
-  // Handle stream proxy at /webapp/stream
-  if (url.pathname === `${BASE_PATH}/stream`) {
+  const path = url.pathname
+
+  if (
+    path === '/stream' ||
+    path === '/webapp/stream' ||
+    path === '/webapp/stream.php' ||
+    path === '/stream.php'
+  ) {
     proxyStream(req, res)
     return
   }
 
-  // Strip BASE_PATH from pathname if present
-  let pathname = url.pathname
-  if (pathname.startsWith(BASE_PATH)) {
-    pathname = pathname.substring(BASE_PATH.length) || '/'
-  }
-
-  const safePath = normalize(pathname).replace(/^(\.\.[/\\])+/, '')
-  const requested = join(DIST, safePath === '/' ? 'index.html' : safePath)
-  const filePath = existsSync(requested) && statSync(requested).isFile()
-    ? requested
-    : join(DIST, 'index.html')
-
-  sendFile(res, filePath)
+  let rel = path
+  if (rel === '/' || rel === '/webapp' || rel === '/webapp/') rel = '/index.html'
+  if (rel.startsWith('/webapp/')) rel = rel.slice('/webapp'.length)
+  const safe = normalize(rel).replace(/^(\.\.[/\\])+/, '')
+  sendFile(res, join(ROOT, safe))
 })
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Kastoria FM listening on http://0.0.0.0:${PORT}`)
-  console.log(`Base path: ${BASE_PATH}`)
 })

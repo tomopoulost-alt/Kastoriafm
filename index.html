@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kastoria — Πλάνο Ημέρας</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand-block">
+      <p class="brand">Kastoria</p>
+      <p class="brand-sub">Ξύλο Δημιουργίες · Πλάνο ημέρας</p>
+    </div>
+    <div class="meta">
+      <label class="date-pick">
+        <span>Ημερομηνία</span>
+        <input type="date" id="planDate" />
+      </label>
+      <button type="button" class="btn" id="printBtn">Εκτύπωση</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-strip" id="planHero">
+      <h1 id="planTitle">Φόρτωση πλάνου…</h1>
+      <p id="planNotes" class="lede"></p>
+      <p class="shift" id="shiftInfo"></p>
+    </section>
+
+    <section class="grid-two">
+      <article class="panel">
+        <h2>Προτεραιότητες</h2>
+        <ol id="priorities" class="clean-list"></ol>
+      </article>
+      <article class="panel">
+        <h2>Υλικά που χρειάζονται</h2>
+        <ul id="materials" class="clean-list"></ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Παραγγελίες</h2>
+        <p class="hint">Στάδιο · προθεσμία · ομάδα</p>
+      </div>
+      <div id="orders" class="orders"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Ανάθεση 15 ατόμων</h2>
+        <p class="hint" id="presenceSummary"></p>
+      </div>
+      <div id="assignments" class="assign-table" role="table"></div>
+    </section>
+
+    <section class="grid-two">
+      <article class="panel">
+        <h2>Απουσίες</h2>
+        <ul id="absences" class="clean-list"></ul>
+      </article>
+      <article class="panel">
+        <h2>Τέλος βάρδιας</h2>
+        <ul id="checklist" class="clean-list checks"></ul>
+      </article>
+    </section>
+
+    <section class="panel roster-panel">
+      <div class="panel-head">
+        <h2>Μόνιμο οργανόγραμμα</h2>
+        <p class="hint">15 θέσεις · σταθμοί παραγωγής</p>
+      </div>
+      <div id="roster" class="roster"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Στείλε κάθε μέρα: παραγγελίες, στάδια, απουσίες, επείγοντα — και ετοιμάζεται νέο πλάνο.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

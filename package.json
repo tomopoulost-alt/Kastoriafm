@@ -1,0 +1,21 @@
+{
+  "name": "kastoriafm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:wordpress": "bash scripts/build-wordpress.sh",
+    "preview": "vite preview",
+    "start": "node standalone-server.js",
+    "start:vite": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.5.0",
+    "vite": "^8.2.0"
+  }
+}

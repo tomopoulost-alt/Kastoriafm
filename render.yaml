@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: kastoriafm-radio
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /

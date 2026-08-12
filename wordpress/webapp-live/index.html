@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#dce8eb">
+<meta name="description" content="Kastoria FM 91.5 — Ο Σταθμός που ακούει η Πόλη">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kastoria FM">
+<title>Kastoria FM 91.5</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Figtree:wght@500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{min-height:100dvh;font-family:Figtree,sans-serif;color:#243033;background:#dce8eb}
+.w{min-height:100dvh;display:grid;place-items:center;padding:1.5rem;background:linear-gradient(180deg,#eaf2f4,#dce8eb 45%,#b9cfd4);position:relative}
+.clock{
+  position:fixed;
+  top:max(1rem, env(safe-area-inset-top));
+  left:max(1rem, env(safe-area-inset-left));
+  z-index:5;
+  font-family:"JetBrains Mono", ui-monospace, monospace;
+  font-weight:600;
+  font-size:clamp(1.05rem, 3.2vw, 1.35rem);
+  letter-spacing:.08em;
+  color:#0f3f48;
+  background:rgba(244,248,249,.55);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  padding:.45rem .7rem;
+  border-radius:.4rem;
+  line-height:1;
+  user-select:none;
+}
+.s{width:min(100%,28rem);display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center}
+.logo{width:clamp(8.5rem,32vw,12rem);height:auto;filter:drop-shadow(0 18px 28px rgba(15,63,72,.18))}
+.name{margin:.3rem 0 0;font-family:Syne,sans-serif;font-weight:800;font-size:clamp(2.1rem,7vw,3.2rem);letter-spacing:-.04em;color:#0f3f48}
+.tag{margin:.5rem 0 0;color:rgba(36,48,51,.72)}
+.play{width:5rem;height:5rem;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:#fff;background:#1f6f7c;box-shadow:0 16px 30px rgba(15,63,72,.22)}
+.play .h{display:none}
+.play[data-on="1"] [data-i=play]{display:none}
+.play[data-on="1"] [data-i=pause]{display:block}
+.live{font-family:Syne,sans-serif;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#0f3f48}
+.dot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:#c4493a;margin-right:.4rem;vertical-align:middle}
+.st{color:rgba(36,48,51,.68);margin:.35rem 0 0}
+.wave-wrap{
+  width:min(100%,17rem);
+  height:3.4rem;
+  opacity:.22;
+  transition:opacity .35s ease;
+}
+.wave-wrap.on{opacity:1}
+.wave{display:block;width:100%;height:100%}
+.controls{
+  width:min(100%,17rem);
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:.75rem;
+}
+.mute{
+  width:2.5rem;
+  height:2.5rem;
+  border:0;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  color:#0f3f48;
+  background:rgba(15,63,72,.08);
+}
+.mute:hover{background:rgba(15,63,72,.14)}
+.mute[aria-pressed="true"]{color:#c4493a}
+.vol{display:grid;gap:.3rem;justify-items:stretch}
+.vol label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(36,48,51,.55);text-align:left}
+.vol input[type=range]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  height:.28rem;
+  border-radius:999px;
+  background:rgba(15,63,72,.18);
+  outline:none;
+}
+.vol input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:1.05rem;
+  height:1.05rem;
+  border-radius:50%;
+  background:#0f3f48;
+  border:2px solid #f4f8f9;
+  cursor:pointer;
+}
+.vol input[type=range]::-moz-range-thumb{
+  width:1.05rem;
+  height:1.05rem;
+  border-radius:50%;
+  background:#0f3f48;
+  border:2px solid #f4f8f9;
+  cursor:pointer;
+}
+.install{width:min(100%,18rem);display:none;gap:.45rem;justify-items:center}
+.install.show{display:grid}
+.install button{width:100%;border:0;background:transparent;border-bottom:2px solid #1f6f7c;color:#0f3f48;font-family:Syne,sans-serif;font-weight:700;font-size:1rem;padding:.85rem 1rem;cursor:pointer}
+.install p{margin:0;font-size:.9rem;line-height:1.4;color:rgba(36,48,51,.7)}
+@media (prefers-reduced-motion: reduce){
+  .wave-wrap{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="clock" id="clock" aria-live="polite">00:00:00</div>
+<div class="w"><div class="s">
+<div>
+<img class="logo" src="https://i0.wp.com/kastoriafm.gr/wp-content/uploads/2023/05/K91.5.png?w=400" alt="Kastoria FM 91.5" width="200" height="214">
+<h1 class="name">Kastoria FM</h1>
+<p class="tag">Ο Σταθμός που ακούει η Πόλη</p>
+</div>
+<button class="play" id="p" type="button" data-on="0" aria-label="Play">
+<svg data-i="play" viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11.02-6.86a1 1 0 0 0 0-1.72L9.5 4.28a1 1 0 0 0-1.5.86z"/></svg>
+<svg class="h" data-i="pause" viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M7 5h3.5a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9.5 0H20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-3.5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>
+</button>
+<div>
+<div class="live"><span class="dot"></span>Live · 91.5</div>
+<p class="st" id="st">Πατήστε play για να ακούσετε</p>
+</div>
+<div class="wave-wrap" id="waveWrap" aria-hidden="true">
+  <canvas class="wave" id="wave" width="340" height="68"></canvas>
+</div>
+<div class="controls">
+  <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Σίγαση" title="Σίγαση">
+    <svg id="muteIconOn" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M5 10v4h3l4 3V7L8 10H5zm11.5 2a3.5 3.5 0 0 0-1.8-3.05v6.1A3.49 3.49 0 0 0 16.5 12zM14 4.23v2.06a5.5 5.5 0 0 1 0 11.42v2.06a7.5 7.5 0 0 0 0-15.54z"/></svg>
+    <svg id="muteIconOff" class="h" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="display:none"><path d="M16.5 12a3.5 3.5 0 0 0-1.8-3.05v2.24l1.75 1.75c.03-.3.05-.62.05-.94zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-3.53-2.05-6.56-5-7.97v2.06A5.5 5.5 0 0 1 19 12zM4.27 3 3 4.27 7.73 9H5v4h3l4 3v-4.27l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/></svg>
+  </button>
+  <div class="vol">
+    <label for="v">Ένταση</label>
+    <input id="v" type="range" min="0" max="1" step="0.01" value="0.85">
+  </div>
+</div>
+<div class="install" id="ins">
+<button type="button" id="insBtn">Εγκατάσταση εφαρμογής</button>
+<p id="insHint" hidden></p>
+</div>
+</div>
+<audio id="a" preload="none"></audio>
+</div>
+<script>
+(function(){
+  var STREAMS = [
+    location.origin + '/stream',
+    location.origin + '/webapp/stream.php',
+    location.origin + '/?kastoria_stream=1'
+  ];
+  var streamIndex = 0;
+  var a = document.getElementById('a');
+  var p = document.getElementById('p');
+  var st = document.getElementById('st');
+  var v = document.getElementById('v');
+  var muteBtn = document.getElementById('mute');
+  var muteOn = document.getElementById('muteIconOn');
+  var muteOff = document.getElementById('muteIconOff');
+  var clockEl = document.getElementById('clock');
+  var ins = document.getElementById('ins');
+  var insBtn = document.getElementById('insBtn');
+  var insHint = document.getElementById('insHint');
+  var waveWrap = document.getElementById('waveWrap');
+  var canvas = document.getElementById('wave');
+  var ctx = canvas.getContext('2d');
+  var on = false, busy = false, deferred = null, muted = false;
+  var vol = 0.85;
+  var raf = 0;
+  var connectTimer = 0;
+  var bars = 40;
+  var levels = new Float32Array(bars);
+  var phase = 0;
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function pad(n){ return String(n).padStart(2, '0'); }
+  function tickClock(){
+    var d = new Date();
+    clockEl.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  function applyVolume(){
+    a.muted = muted;
+    a.volume = muted ? 0 : vol;
+  }
+
+  function setMuted(next){
+    muted = next;
+    muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    muteBtn.setAttribute('aria-label', muted ? 'Κατάργηση σίγασης' : 'Σίγαση');
+    muteOn.style.display = muted ? 'none' : 'block';
+    muteOff.style.display = muted ? 'block' : 'none';
+    applyVolume();
+  }
+
+  function ui(x){
+    on = x;
+    p.setAttribute('data-on', x ? '1' : '0');
+    waveWrap.classList.toggle('on', x);
+  }
+
+  function isIos(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function paintBars(){
+    var w = canvas.width, h = canvas.height, mid = h / 2;
+    var gap = 2.5;
+    var barW = (w - gap * (bars - 1)) / bars;
+    ctx.clearRect(0, 0, w, h);
+    for (var i = 0; i < bars; i++) {
+      var amp = Math.max(0.05, levels[i]);
+      var barH = Math.max(3, amp * (h * 0.9));
+      var x = i * (barW + gap);
+      var y = mid - barH / 2;
+      var grad = ctx.createLinearGradient(0, y, 0, y + barH);
+      grad.addColorStop(0, 'rgba(31,111,124,0.28)');
+      grad.addColorStop(0.5, 'rgba(15,63,72,0.95)');
+      grad.addColorStop(1, 'rgba(31,111,124,0.28)');
+      ctx.fillStyle = grad;
+      var r = Math.min(3.5, barW / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + barW, y + barH, x, y + barH, r);
+      ctx.arcTo(x, y + barH, x, y, r);
+      ctx.arcTo(x, y, x + barW, y, r);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  function musicMotion(t){
+    phase += 0.045;
+    for (var i = 0; i < bars; i++) {
+      var n = i / (bars - 1);
+      var envelope = Math.sin(Math.PI * n);
+      // layered freqs look like a beat-driven equalizer
+      var beat = 0.55 + 0.45 * Math.sin(phase * 1.7 + i * 0.33);
+      var shimmer = 0.5 + 0.5 * Math.sin(phase * 3.1 - i * 0.55);
+      var bass = 0.5 + 0.5 * Math.sin(phase * 0.9 + i * 0.12);
+      var target = (0.22 * bass + 0.45 * beat + 0.33 * shimmer) * (0.25 + 0.75 * envelope);
+      // occasional stronger peaks
+      if ((Math.floor(phase * 8 + i) % 17) === 0) target = Math.min(1, target + 0.35);
+      levels[i] += (target - levels[i]) * 0.28;
+    }
+  }
+
+  function idleMotion(t){
+    for (var i = 0; i < bars; i++) {
+      var n = i / (bars - 1);
+      var envelope = Math.sin(Math.PI * n);
+      var bob = 0.14 + 0.08 * Math.sin(t / 850 + i * 0.3);
+      levels[i] += ((bob * envelope) - levels[i]) * 0.06;
+    }
+  }
+
+  function loop(t){
+    if (on && !reduceMotion) musicMotion(t);
+    else idleMotion(t || performance.now());
+    paintBars();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function clearConnectTimer(){
+    if (connectTimer) {
+      clearTimeout(connectTimer);
+      connectTimer = 0;
+    }
+  }
+
+  function markPlaying(){
+    clearConnectTimer();
+    busy = false;
+    ui(true);
+    st.textContent = 'Παίζει ζωντανά';
+  }
+
+  function fail(msg){
+    clearConnectTimer();
+    busy = false;
+    try { a.pause(); } catch (e) {}
+    ui(false);
+    st.textContent = msg || 'Αδυναμία αναπαραγωγής. Δοκιμάστε ξανά.';
+  }
+
+  async function tryPlay(url){
+    return new Promise(function(resolve, reject){
+      var settled = false;
+      function cleanup(){
+        a.removeEventListener('playing', onPlaying);
+        a.removeEventListener('error', onError);
+      }
+      function onPlaying(){
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(true);
+      }
+      function onError(){
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(new Error('media error'));
+      }
+      a.addEventListener('playing', onPlaying);
+      a.addEventListener('error', onError);
+      a.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+      applyVolume();
+      var playPromise = a.play();
+      if (playPromise && playPromise.then) {
+        playPromise.catch(function(err){
+          if (settled) return;
+          settled = true;
+          cleanup();
+          reject(err);
+        });
+      }
+    });
+  }
+
+  async function start(){
+    if (busy) return;
+    if (on) return;
+    busy = true;
+    st.textContent = 'Σύνδεση…';
+    clearConnectTimer();
+    connectTimer = setTimeout(function(){
+      // Keep trying next source on timeout
+      a.pause();
+    }, 10000);
+
+    var lastError = null;
+    for (var i = 0; i < STREAMS.length; i++) {
+      var idx = (streamIndex + i) % STREAMS.length;
+      try {
+        st.textContent = 'Σύνδεση…';
+        await tryPlay(STREAMS[idx]);
+        streamIndex = idx;
+        markPlaying();
+        return;
+      } catch (err) {
+        lastError = err;
+        console.warn('Stream failed', STREAMS[idx], err);
+      }
+    }
+    console.error(lastError);
+    fail('Αδυναμία σύνδεσης στη ροή. Δοκιμάστε ξανά.');
+  }
+
+  function stop(){
+    clearConnectTimer();
+    busy = false;
+    a.pause();
+    a.removeAttribute('src');
+    try { a.load(); } catch (e) {}
+    ui(false);
+    st.textContent = 'Σε παύση';
+  }
+
+  p.onclick = function(){ on ? stop() : start(); };
+
+  function onVolInput(){
+    vol = Number(v.value);
+    if (muted && vol > 0) setMuted(false);
+    applyVolume();
+  }
+  v.addEventListener('input', onVolInput);
+  v.addEventListener('change', onVolInput);
+
+  muteBtn.addEventListener('click', function(){
+    if (!muted && vol === 0) vol = 0.85;
+    setMuted(!muted);
+    if (!muted) v.value = String(vol);
+  });
+
+  a.onerror = function(){ ui(false); st.textContent = 'Σφάλμα ροής. Δοκιμάστε ξανά.'; };
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferred = e;
+    if (!isStandalone()) ins.classList.add('show');
+  });
+  window.addEventListener('appinstalled', function(){
+    deferred = null;
+    ins.classList.remove('show');
+    st.textContent = 'Η εφαρμογή εγκαταστάθηκε';
+  });
+
+  if (!isStandalone()) ins.classList.add('show');
+
+  insBtn.addEventListener('click', async function(){
+    if (deferred) {
+      deferred.prompt();
+      await deferred.userChoice;
+      deferred = null;
+      ins.classList.remove('show');
+      return;
+    }
+    insHint.hidden = false;
+    if (isIos()) {
+      insHint.textContent = 'Στο iPhone: πατήστε Κοινή χρήση (□↑) και μετά «Προσθήκη στην οθόνη Αφετηρίας».';
+    } else {
+      insHint.textContent = 'Ανοίξτε το μενού ⋮ του Chrome και επιλέξτε «Εγκατάσταση εφαρμογής» ή «Add to Home screen».';
+    }
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function(err){
+      console.warn('SW failed', err);
+    });
+  }
+
+  applyVolume();
+  raf = requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

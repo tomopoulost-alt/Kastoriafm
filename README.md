@@ -2,7 +2,11 @@
 
 Minimal marketing site for **[artiklimacy.com](https://artiklimacy.com)** (E.A. Arti Klima LTD, Paphos, Cyprus).
 
-## Preview
+## Live preview
+
+**https://artiklima.tiiny.site**
+
+## Local preview
 
 Open `index.html` in a browser, or serve the folder locally:
 

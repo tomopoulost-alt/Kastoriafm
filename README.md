@@ -1,6 +1,8 @@
 # Arti Klima — Client Demo
 
-Minimal marketing site for **[artiklimacy.com](https://artiklimacy.com)** (E.A. Arti Klima LTD, Paphos, Cyprus).
+Minimal cinematic marketing site for **[artiklimacy.com](https://artiklimacy.com)** (E.A. Arti Klima LTD, Paphos, Cyprus).
+
+Design direction inspired by premium scroll-storytelling website craft (image-first hero, process chapters, restrained UI).
 
 ## Live preview
 
@@ -8,19 +10,12 @@ Minimal marketing site for **[artiklimacy.com](https://artiklimacy.com)** (E.A. 
 
 ## Local preview
 
-Open `index.html` in a browser, or serve the folder locally:
-
 ```bash
 python3 -m http.server 8080
 ```
 
-Then visit `http://localhost:8080`.
-
 ## Contents
 
-- Hero with brand-forward lockup
-- Services overview
-- About / experience
-- Contact details (phone & address from the live site)
-
-Static HTML, CSS, and a small JS file — no build step.
+- Scroll-driven story: cooling → heating → solar → perfection
+- Services board, about, contact
+- Static HTML/CSS/JS — no build step

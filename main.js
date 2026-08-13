@@ -1,53 +1,60 @@
 (() => {
   const header = document.querySelector("[data-header]");
   const toggle = document.querySelector("[data-nav-toggle]");
-  const mobileNav = document.querySelector("[data-mobile-nav]");
+  const nav = document.querySelector("[data-nav]");
   const year = document.querySelector("[data-year]");
+  const cinematic = document.querySelector("[data-cinematic]");
+  const progress = document.querySelector("[data-progress]");
+  const slides = [...document.querySelectorAll("[data-slide]")];
+  const chapters = [...document.querySelectorAll("[data-chapter]")];
 
-  if (year) {
-    year.textContent = String(new Date().getFullYear());
-  }
+  if (year) year.textContent = String(new Date().getFullYear());
 
-  const setHeaderState = () => {
-    if (!header) return;
-    header.classList.toggle("is-scrolled", window.scrollY > 24);
-  };
-
-  setHeaderState();
-  window.addEventListener("scroll", setHeaderState, { passive: true });
-
-  const closeMobileNav = () => {
-    if (!toggle || !mobileNav) return;
+  const closeNav = () => {
+    if (!toggle || !nav) return;
     toggle.setAttribute("aria-expanded", "false");
-    mobileNav.classList.remove("is-open");
+    nav.classList.remove("is-open");
+    document.body.style.overflow = "";
   };
 
-  const openMobileNav = () => {
-    if (!toggle || !mobileNav) return;
-    toggle.setAttribute("aria-expanded", "true");
-    mobileNav.classList.add("is-open");
-  };
-
-  if (toggle && mobileNav) {
+  if (toggle && nav) {
     toggle.addEventListener("click", () => {
       const open = toggle.getAttribute("aria-expanded") === "true";
-      if (open) {
-        closeMobileNav();
-      } else {
-        openMobileNav();
-      }
+      toggle.setAttribute("aria-expanded", String(!open));
+      nav.classList.toggle("is-open", !open);
+      document.body.style.overflow = open ? "" : "hidden";
     });
 
-    mobileNav.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", closeMobileNav);
-    });
-
-    window.addEventListener("resize", () => {
-      if (window.matchMedia("(min-width: 800px)").matches) {
-        closeMobileNav();
-      }
+    nav.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", closeNav);
     });
   }
+
+  const setChapter = (index) => {
+    slides.forEach((el, i) => el.classList.toggle("is-active", i === index));
+    chapters.forEach((el, i) => el.classList.toggle("is-active", i === index));
+  };
+
+  const onScroll = () => {
+    if (!cinematic) return;
+
+    const rect = cinematic.getBoundingClientRect();
+    const total = cinematic.offsetHeight - window.innerHeight;
+    const scrolled = Math.min(Math.max(-rect.top, 0), total);
+    const ratio = total > 0 ? scrolled / total : 0;
+
+    if (progress) progress.style.width = `${ratio * 100}%`;
+
+    const index = Math.min(
+      slides.length - 1,
+      Math.floor(ratio * slides.length)
+    );
+    setChapter(index);
+  };
+
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
 
   const reveals = document.querySelectorAll(".reveal");
   if ("IntersectionObserver" in window && reveals.length) {
@@ -60,9 +67,8 @@
           }
         });
       },
-      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0.18, rootMargin: "0px 0px -8% 0px" }
     );
-
     reveals.forEach((el) => observer.observe(el));
   } else {
     reveals.forEach((el) => el.classList.add("is-visible"));

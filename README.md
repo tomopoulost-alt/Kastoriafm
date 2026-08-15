@@ -2,10 +2,12 @@
 
 Radio / music project.
 
-## Afro House track
+## Latest track — Veil
 
-See [`music/`](music/) for an original **Afro House** track at **128 BPM** with African-inspired call-and-response vocals.
+Melodic House inspired by **Argy & Omnya — Aria**:
 
-- Full: `music/afro_house_128bpm.mp3` (~2:15)
-- Preview: `music/afro_house_128bpm_preview.mp3` (60s)
-- Player: open `music/player.html` in a browser
+- Full: [`music/aria_inspired_122bpm.mp3`](music/aria_inspired_122bpm.mp3) (~2:38, 122 BPM)
+- Preview: [`music/aria_inspired_122bpm_preview.mp3`](music/aria_inspired_122bpm_preview.mp3)
+- Player: [`music/player.html`](music/player.html)
+
+Download (branch): https://github.com/tomopoulost-alt/Kastoriafm/raw/cursor/afro-house-track-ebfe/music/aria_inspired_122bpm.mp3

@@ -1,4 +1,4 @@
-# Generated WAV masters (regenerate via music/generate_afro_house.py)
+# Generated WAV masters (regenerate via music/*.py)
 music/*.wav
 __pycache__/
 *.pyc

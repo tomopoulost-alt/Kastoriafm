@@ -1,0 +1,235 @@
+.page {
+  min-height: 100vh;
+  padding: 1.5rem 0 3rem;
+}
+
+.shell {
+  max-width: 760px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stepMeta {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+}
+
+.stepMeta span {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--leaf);
+  font-weight: 700;
+}
+
+.stepMeta strong {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.progressTrack {
+  height: 3px;
+  background: rgba(16, 32, 24, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--leaf), var(--signal-deep));
+  transform-origin: left;
+  animation: pulse-line 2.4s ease-in-out infinite;
+  transition: width 280ms ease;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 1.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.panel h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 0.5rem;
+}
+
+.panel > p {
+  margin: 0 0 1.4rem;
+  color: var(--ink-soft);
+}
+
+.panel h2 {
+  font-size: 0.95rem;
+  margin: 1.25rem 0 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.panel label {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.panel input,
+.panel textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+}
+
+.optionGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.option,
+.optionActive {
+  text-align: left;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.option strong,
+.optionActive strong {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.option span,
+.optionActive span {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+
+.optionActive {
+  border-color: transparent;
+  background: #102018;
+  color: #f3f7f3;
+}
+
+.optionActive span {
+  color: rgba(243, 247, 243, 0.75);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 0.5rem;
+}
+
+.chip,
+.chipActive {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.chipActive {
+  background: var(--signal);
+  border-color: transparent;
+  color: var(--ink);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.error {
+  color: #8a1f1f;
+  font-weight: 600;
+}
+
+.result {
+  max-width: 860px;
+  padding-top: 1rem;
+}
+
+.back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.result h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: -0.03em;
+  margin: 0.35rem 0 0.85rem;
+}
+
+.summary {
+  color: var(--ink-soft);
+  font-size: 1.1rem;
+  max-width: 40rem;
+  line-height: 1.55;
+}
+
+.blocks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+
+.blocks section {
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+
+.blocks h2 {
+  font-family: var(--font-display);
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+}
+
+.blocks ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .blocks {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    padding: 1.25rem;
+  }
+}

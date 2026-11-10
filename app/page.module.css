@@ -1,0 +1,196 @@
+.nav {
+  padding: 1.25rem 0;
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(14px);
+  background: rgba(243, 247, 243, 0.72);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+}
+
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.navLinks {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.hero {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  align-items: center;
+  padding: 2rem 0 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: auto -10% -20% 40%;
+  height: 70%;
+  background:
+    radial-gradient(closest-side, rgba(31, 111, 74, 0.18), transparent 70%),
+    radial-gradient(closest-side, rgba(196, 240, 71, 0.22), transparent 68%);
+  filter: blur(8px);
+  animation: drift 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2.5rem;
+  align-items: center;
+  position: relative;
+}
+
+.heroCopy {
+  max-width: 34rem;
+}
+
+.heroBrand {
+  font-size: clamp(4.2rem, 10vw, 7.5rem);
+  line-height: 0.9;
+  margin: 0.35rem 0 1rem;
+}
+
+.heroLead {
+  font-size: 1.15rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 1.75rem;
+  max-width: 32rem;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.heroVisual {
+  position: relative;
+  min-height: 420px;
+}
+
+.orbit {
+  position: absolute;
+  inset: 8% 12%;
+  border: 1px solid rgba(16, 32, 24, 0.18);
+  border-radius: 40% 60% 55% 45%;
+  animation: drift 7s ease-in-out infinite;
+}
+
+.panel,
+.panelSecondary {
+  position: absolute;
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.panel {
+  left: 8%;
+  top: 18%;
+  width: min(280px, 70%);
+  background: #0d1712;
+  color: #f3f7f3;
+  box-shadow: var(--shadow);
+  animation: rise-in 800ms ease both;
+}
+
+.panel span,
+.panelSecondary span {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.panel strong,
+.panelSecondary strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.panel em,
+.panelSecondary em {
+  font-style: normal;
+  opacity: 0.8;
+}
+
+.panelSecondary {
+  right: 4%;
+  bottom: 16%;
+  width: min(240px, 65%);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  animation: rise-in 900ms ease 120ms both;
+}
+
+.section {
+  padding: 4rem 0 5rem;
+}
+
+.section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 0.75rem;
+}
+
+.sectionLead {
+  max-width: 40rem;
+  color: var(--ink-soft);
+  margin: 0 0 2rem;
+  line-height: 1.6;
+}
+
+.featureList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.featureList article {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.featureList h3 {
+  font-family: var(--font-display);
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.featureList p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .heroGrid,
+  .featureList {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    min-height: 320px;
+  }
+
+  .navLinks {
+    gap: 0.85rem;
+    font-size: 0.85rem;
+  }
+}
